@@ -24,7 +24,7 @@ void setup() {
 void loop() {
   Serial.print("Sending packet: ");
   Serial.println(counter);
-  // send packet
+  // to send data over LoRa, packets need to be defined. The output goes between begin and end functions.
   LoRa.beginPacket();
 /*
 * LoRa.setTxPower(txPower,RFOUT_pin);
