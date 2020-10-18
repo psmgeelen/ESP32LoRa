@@ -4,6 +4,10 @@
 ## Scope
 of this project is to do an end-to-end project with a "real-world" application. The use-case is measuring the moisture of the soil a vegetable garden. The architecture should be based on as much "off-shelve" code and hardware and should some what generic, hopefully supporting other projects accordingly. 
 
+## Architecture
+The architecture is set up around the functional requirements that we think we need. So firstly we assume that we need a sensor and "something" to read out and transfer these values. The transfer protocol had to be power-efficient, can work off-grid and does not require large bandwidth capabilities, which led us to selecting LoRa. The second device is a mere pass-through and transcribes the data from LoRa-packet to a HTTP-request to the PostgREST API, uploading the data through WiFi connectivity. The receiver can also be integrated into the host when using a local devices, but we found it easier to decouple it first, to get a better understanding off all the components. The advantage of having an intermittant receiver or gateway, is that many sources with multiple, potenitally distant, geographic locations can be integrated without changing the architecture. Lastly, the host is designed around a Docker runtime, that provides its own virtual network, manages a minimal exposure of ports, and uses the local OS only for persistance of the database. This should make the host extremely deployable and reproducable. Docker enables us to deal with the networking as abstract concepts, instead of getting into the mud with all the configuraton that is usually necessary when installing software on an OS. 
+![Architecture Project](doc/ESP32_LoRa.png)
+
 ## Materials
 We use some Heltec ESP32 LoRa v2 modules, some moisture sensors and a Rasperry Pi 4 as our IoT Master (collecting and visualising the data). The Raspberry Pi 4 is outfitter with a WaveShare LoRa HAT. Below is a more specific drilldown of why what materials have been selected:
 
@@ -21,6 +25,12 @@ In our specific use-case we want to deploy sensors in a garden. This means that 
 ![Heltec 32 LoRa Device](doc/heltec-board-pinout.jpg)
 
 ### Host
+The host-device can be anything, as long as it fulfills certain requirements. Based on the architecture displayed in the scope section, we want it to run several Docker containers. We are talking about fully fledged programs here, that need a Linux Operating System (OS). Common computers and/or servers would be ample, and we have been testing our setup on a small VM (VPS hosting) that was minimally specced at 1 vCPU, 0.5 GB RAM and 10 GB ROM, costing 1 euro/month at the time of writing. 
+
+Considering that the containers that we want to run, do not only support x86_64 processors, but also ARM-based platforms, we used a Raspberry Pi 4, for a cheap and snappy experience. This new boards have awesome power the buck and can be the beginning of many other projects too. The Raspberry Pi 4 that we chose was the 2 GB RAM edition, that is available for about 40 euros in Europe, and has a Broadcom BCM2711, Quad core Cortex-A72 (ARM v8) 64-bit SoC @ 1.5GHz and dedicated GPU that both can be easily overclocked. It is powerfull enough to do all that we will ask of it, and more! Keep in mind that you should get a serious USB-C powersupply, as the Single Board Computer (SBC) does chew away some amps and not all powersupplies can deliver that consistently. 
+
+If you want to have LoRa connectivity directly on the host, you can use the WaveShare SX1262 LoRA-HAT. The selection of LoRa HATs is sparse when we were browsing the internet. Special attention reached us when we found the SX1262 because at the time of writing this tutorial we found this to have a relatively new LoRa chip and was fairly cheap (35 euros). It could also be purchased from Amazon. Considering we are writing this tutorial in Europe, we purchased the 868 MHz version. Keep in mind the the bandwidth that is allowed is different for the US and Asia! The LoRa is compact and has the size of a Raspberry Pi Zero. The documentation was poor at best, but we have figured out how it works and we share our findings here#link.
+![WaveShare SX1262 LoRa Hat](doc/waveshare_SX1262.jpg)
 
 ## IDE 
 This project is developed in Visual Studio Code, a free IDE that supports many extensions. We use the plaformio.org extension for programming on our ESP32 modules as it supports a full suite of firmware and libaries. To put simply, platformio takes care of many of "human-errors" that are common with these projects. Please note that this project was developed on Ubuntu 20.04
