@@ -3,9 +3,19 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <LoRa.h>
+// TempSensor is a digital "1Wire" protocol sensor. 
+#include <OneWire.h> 
+#include <DallasTemperature.h>
+// set GPIO Pin for temp sensor
+#define ONE_WIRE_BUS 36
 
 
 int counter = 0;
+int tempValue = 10;
+
+// Configure temp sensor
+OneWire oneWire(ONE_WIRE_BUS); 
+DallasTemperature sensors(&oneWire);
 
 void setup() {
   Serial.begin(9600); // Make sure that the baudrate of your setup aligns with this rate!
@@ -18,10 +28,21 @@ void setup() {
     Serial.println("Starting LoRa failed!");
     while (1);
   }
-  
+  Serial.println("Dallas Temperature IC Control Library Demo"); 
+  sensors.begin(); 
 }
 
 void loop() {
+  // Temp Section
+  Serial.print(" Requesting temperatures..."); 
+  sensors.requestTemperatures(); // Send the command to get temperature readings 
+  Serial.println("DONE"); 
+  /********************************************************************/
+  Serial.print("Temperature is: "); 
+  Serial.print(sensors.getTempCByIndex(0));
+
+
+  // LoRa Section
   Serial.print("Sending packet: ");
   Serial.println(counter);
   // to send data over LoRa, packets need to be defined. The output goes between begin and end functions.
