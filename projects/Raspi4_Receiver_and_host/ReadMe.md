@@ -13,11 +13,11 @@ We tried using Ubuntu 64-bit and were not able to configuring everything the way
 The Micro-SD is ready for use and can now be inserted into the Raspberry Pi. In our setup we connect through SSH. In Linux the command is `ssh pi@LocalIP` in which `pi` is the username and `LocalIP` is the IP-adres that you find when looking up the device in your connected devices in your router. It will prompt for a password, which is by default "raspberry". It makes sense to change that later, especially if you want to expose the ports of this device to the outside network. Next steps would be to update and upgrade the OS with `sudo apt update && sudo apt upgrade -y`. After you have succesfully updated your system you want to run `sudo raspi-config`, which opens a CLI tool for configuring your Raspberry Pi. In order to setup you UART properly you need to got to Use `Interfacing Options` and select `configure serial`. Answer `<NO>` to login shell and `<Yes>` to configure serial hardware enable. 
 ### Checking UART
 Your UART connection should be setup. When in doubt make sure that you do a loop-test, in which you send and receive messages locally on your Raspberry Pi. The script is provided in this directory and make sure you run it with `sudo`. Before running, you obviously must connect the 8th and 10th pin, connecting the output (transmit) and input (receive) of the UART connection, referred to as `UART0_TXD` and `UART0_RXD` respectively. An image below displays the exact location 
-![Pinout Raspberry Pi](doc/Raspberry-Pi-GPIO-Header-with-Photo.png)
+![Pinout Raspberry Pi](../../doc/Raspberry-Pi-GPIO-Header-with-Photo.png)
 
 ## Docker and her containers
 First things first, Docker is awesome! Docker uses containers to deploy applications "in the field". The advantage (amongs many other) of using Docker, is that Docker deploys the applications by deploying images (like recipies) in containers. Containers are stand-alone applications that contains programs and configurations, all in a single box. Docker does this in a very efficient way costing very little computional overhead. To add Docker is very well supported by all relevant software companies and by the Open-Source community. If you really want to understand all the ins and outs on Docker, I strongly recommend taking the Docker Mastery course that can be found on [Udemy](https://www.udemy.com/course/docker-mastery/). 
-![Docker-Logo](doc/Moby-logo.png)
+![Docker-Logo](../../doc/Moby-logo.png)
 
 In our case we want to use Docker to:
 1. Setup our own virtual-network for our applications
