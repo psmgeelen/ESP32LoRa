@@ -6,8 +6,8 @@
 // TempSensor is a digital "1Wire" protocol sensor. 
 #include <OneWire.h> 
 #include <DallasTemperature.h>
-// set GPIO Pin for temp sensor
-#define ONE_WIRE_BUS 36
+// set GPIO Pin for temp sensor. REQUIRES BIDIRECTIONAL GPIO PIN
+#define ONE_WIRE_BUS 17
 
 
 int counter = 0;
@@ -18,18 +18,22 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 void setup() {
+  sensors.begin(); 
+  Serial.print("Number of sensors = ");
+  Serial.println(sensors.getDeviceCount());
+  Serial.print("Parasite mode = ");
+  Serial.println(sensors.isParasitePowerMode());
   Serial.begin(9600); // Make sure that the baudrate of your setup aligns with this rate!
   LoRa.setPins(18, 14, 26); // Initializing LoRa device, these settings should fit a Heltec ESP32 LoRa v2 board
   while (!Serial);
 
   Serial.println("LoRa Sender");
 
-  if (!LoRa.begin(868E6)) { // LoRa is set to 868 MHz as this project was run in Europe, please note that this setting is non-trivial, as the board too, have  a limited range.
-    Serial.println("Starting LoRa failed!");
-    while (1);
-  }
+  // if (!LoRa.begin(868E6)) { // LoRa is set to 868 MHz as this project was run in Europe, please note that this setting is non-trivial, as the board too, have  a limited range.
+  //   Serial.println("Starting LoRa failed!");
+  //   while (1);
+  // }
   Serial.println("Dallas Temperature IC Control Library Demo"); 
-  sensors.begin(); 
 }
 
 void loop() {

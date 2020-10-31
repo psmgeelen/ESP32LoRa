@@ -1,5 +1,6 @@
 # ReadMe for ESP32LoRa project
 *developed by Arseny Starostin and Pieter Geelen*
+Trello board: https://trello.com/b/dxxQNYmM/esp32-lora-garden
 
 ## Scope
 of this project is to do an end-to-end project with a "real-world" application. The use-case is measuring the moisture of the soil a vegetable garden. The architecture should be based on as much "off-the-shelve" code and hardware and should be some what generic, hopefully supporting other projects accordingly. 
