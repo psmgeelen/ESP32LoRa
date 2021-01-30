@@ -30,7 +30,6 @@ const char* serverName = "http://217.160.172.124:3000/humidity_log";
 
 
 
-
 void setup() {
   Serial.begin(9600); // Make sure that the baudrate of your setup aligns with this rate!
   LoRa.setPins(18, 14, 26); // Initializing LoRa device, these settings should fit a Heltec ESP32 LoRa v2 board
@@ -60,8 +59,8 @@ void setup() {
 
 void loop() {
 
-
-
+  String LoRaData; // this string is the serialized JSON we get out of LoRa
+  String json_string;  // This string we send over HTTP
 
   // try to parse packet
   int packetSize = LoRa.parsePacket();
@@ -71,61 +70,62 @@ void loop() {
     
     // read packet
     while (LoRa.available()) {
-      // print the string (DEV)
-      Serial.print((char)LoRa.read());  
+    LoRaData = LoRa.readString();
+    Serial.print(LoRaData);
     }
-    // print RSSI of packet
-    Serial.print("' with RSSI ");
-    Serial.println(LoRa.packetRssi());
-
-  }
-  // else
-  // {
-  //   Serial.println("empty ");
-  // }
-    
+     // parse the package  
  
-  //   // define a string object to print the json to?
-  //   String json_data;
-  //   //  create and parse json object to pass to HTTP POST request later
-  //   StaticJsonBuffer<69> jsonBuffer;
-  //   char json_payload[] = "{'sensor_value': '1111', 'created_at': '2020-12-01 00:00:00' }";
-  //   JsonObject& root = jsonBuffer.parseObject(json_payload);
+    //  create and parse json object to pass to HTTP POST request later
+    DynamicJsonBuffer jsonBuffer;
+    JsonObject& root = jsonBuffer.parseObject(LoRaData);
 
-  //   if(!root.success()) {
-  //     Serial.println("parseObject() failed");
-  //   } else {
-  //     Serial.println("JSON OK");
-  //   }
+    if(!root.success()) {
+      Serial.println("parseObject() failed");
+    } else {
+      Serial.println("JSON OK");
+    };
+    
+    //put the json in the string 
+    root.printTo(json_string);
+    Serial.print(json_string);
 
-  //   //put the json in the string object
-  //   root.printTo(json_data);
-  //   Serial.print(json_data);
+    //   // check wifi connection
+    //   if (WiFi.status() == WL_CONNECTED){
+    //   Serial.println("Wifi connected");
+    //   } else {
 
+    //     // set up wifi
+    //     WiFi.begin(ssid, password);
+    //     // try connecting to wifi and display status about that
+    //     Serial.println("Connecting");
+    //     while(WiFi.status() != WL_CONNECTED) { 
+    //       delay(500);
+    //       Serial.print(".");
+    //     }
+    //     // print the IP adress of the device (?)
+    //     Serial.println(WiFi.localIP());
+    //   }
+    
+    // // initialize http library and point to server
+    //   // startup http client
+    // HTTPClient http;
+    // http.begin(serverName);
+    // // send the JSON and print response code
+    // int httpResponseCode = http.POST(json_data);
+    // Serial.println(httpResponseCode);
+    //delay(1000);
 
-  //   // check wifi connection
-  //   if (WiFi.status() == WL_CONNECTED){
-  //   Serial.println("Wifi connected");
-  //   } else {
+      
+      // print RSSI of packet
+      int packetrssi = LoRa.packetRssi();
+      Serial.print("' with RSSI ");
+      Serial.println(packetrssi);
 
-  //     // set up wifi
-  //     WiFi.begin(ssid, password);
-  //     // try connecting to wifi and display status about that
-  //     Serial.println("Connecting");
-  //     while(WiFi.status() != WL_CONNECTED) { 
-  //       delay(500);
-  //       Serial.print(".");
-  //     }
-  //     // print the IP adress of the device (?)
-  //     Serial.println(WiFi.localIP());
-  //   }
-  
-  // // initialize http library and point to server
-  //   // startup http client
-  // HTTPClient http;
-  // http.begin(serverName);
-  // // send the JSON and print response code
-  // int httpResponseCode = http.POST(json_data);
-  // Serial.println(httpResponseCode);
-  //delay(10000);
+    }
+    // else
+    // {
+    //   Serial.println("empty ");
+    // }
+
+ 
 }
