@@ -10,20 +10,12 @@
 // arduinoJSON is used to create a JSON object from our readings
 #include <ArduinoJson.h>
 // set GPIO Pin for temp sensor. REQUIRES BIDIRECTIONAL GPIO PIN
-//wifi
-#include <WiFi.h>
-//HTTP Client
-#include <HTTPClient.h>
 
-//# WiFi Setup
-// set up wifi credentials 
-const char* ssid     = "harseny";
-const char* password = "1234abcd";
 
 // set up server adress to send data to 
 // the server is a PostgREST service
 // it accepts the IP, a port and the name of the table we write to
-const char* serverName = "http://217.160.172.124:3000/humidity_log";
+const char* serverName = "217.160.172.124:3000/humidity_log";
 
 
 
@@ -40,13 +32,13 @@ int tempValue = 10;
 
 
 
-
+// define a static json document with size 200, we are going to be adding our outputs to it.
+// expects the form '{ "deviceid" : "1", "battery":200, "temperature":205, "humidity":210 }'
 StaticJsonDocument<200> doc;
 
 void setup() {
   doc["deviceid"] = 1;
-  doc["battery"] = analogRead(A4); 
-  // last value given wat 1713.
+
 
   sensors.begin(); 
   Serial.print("Number of sensors = ");
@@ -54,7 +46,9 @@ void setup() {
   Serial.print("Parasite mode = ");
   Serial.println(sensors.isParasitePowerMode());
   Serial.begin(9600); // Make sure that the baudrate of your setup aligns with this rate!
-  LoRa.setPins(18, 14, 26); // Initializing LoRa device, these settings should fit a Heltec ESP32 LoRa v2 board
+
+  // Initializing LoRa device, these settings should fit a Heltec ESP32 LoRa v2 board
+  LoRa.setPins(18, 14, 26); 
   while (!Serial);
 
   Serial.println("LoRa Sender");
@@ -66,21 +60,15 @@ void setup() {
   Serial.println("Dallas Temperature IC Control Library Demo"); 
 
 
-  // initial wifi setup. This is repeated within the loop to catch disconnects
-  WiFi.begin(ssid, password);
-  // try connecting to wifi and display status about that
-  Serial.println("Connecting");
-    while(WiFi.status() != WL_CONNECTED) { 
-    delay(500);
-    Serial.print(".");
-  }
-  // print the IP adress of the device (?)
-  Serial.println(WiFi.localIP());
 }
 
-
-
 void loop() {
+  // battery section. simply gets the DAC value (TODO: moving average of the values)
+  doc["battery"] = analogRead(A4); 
+  // last value given wat 1713.
+
+
+
   // Temp Section
   Serial.print(" Requesting temperatures..."); 
   sensors.requestTemperatures(); // Send the command to get temperature readings 
@@ -89,7 +77,7 @@ void loop() {
   tempValue = sensors.getTempCByIndex(0);
   
   
-  Serial.print(tempValue);
+
   // add temp value to JSON object
   doc["temperature"] = tempValue;
 
@@ -109,13 +97,7 @@ void loop() {
   LoRa.print(json_string);
   LoRa.endPacket();
   
-  // initialize http library and point to server
-  // startup http client
-  HTTPClient http;
-  http.begin(serverName);
-  // send the JSON and print response code
-  int httpResponseCode = http.POST(json_string);
-  Serial.println(httpResponseCode);
+
 
   delay(1000);                       // wait for a second
 }
