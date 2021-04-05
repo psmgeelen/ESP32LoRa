@@ -33,7 +33,7 @@ void loop() {
   Serial.println(sensors.getDeviceCount());
   Serial.print("Parasite mode = ");
   Serial.println(sensors.isParasitePowerMode());
-  // Temp Section
+  // Temp D
   Serial.print(" Requesting temperatures..."); 
   sensors.requestTemperatures(); // Send the command to get temperature readings 
   delay(1000);

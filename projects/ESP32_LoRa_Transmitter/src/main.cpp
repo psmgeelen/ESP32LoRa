@@ -9,19 +9,25 @@
 
 // arduinoJSON is used to create a JSON object from our readings
 #include <ArduinoJson.h>
-
-// create json object. We write sensor values to this object, then deserialize and send it over LORA;
-  // Inside the brackets, 200 is the RAM allocated to this document.
-  // Don't forget to change this value to match your requirement.
-  // Use arduinojson.org/v6/assistant to compute the capacity.
-
-
-
-// Configure temperature sensor
-
-
 // set GPIO Pin for temp sensor. REQUIRES BIDIRECTIONAL GPIO PIN
-#define ONE_WIRE_BUS 17 
+//wifi
+#include <WiFi.h>
+//HTTP Client
+#include <HTTPClient.h>
+
+//# WiFi Setup
+// set up wifi credentials 
+const char* ssid     = "harseny";
+const char* password = "1234abcd";
+
+// set up server adress to send data to 
+// the server is a PostgREST service
+// it accepts the IP, a port and the name of the table we write to
+const char* serverName = "http://217.160.172.124:3000/humidity_log";
+
+
+
+#define ONE_WIRE_BUS 3
 
 // OneWire / DT are used by the temp sensor, so we just initialize the libs.
 OneWire oneWire(ONE_WIRE_BUS); 
@@ -38,17 +44,9 @@ int tempValue = 10;
 StaticJsonDocument<200> doc;
 
 void setup() {
-
- 
-  
-  
-
   doc["deviceid"] = 1;
-  // doc["temperature"] = 1000;
-  // doc["humidity"] = 1000;
-  // doc["battery"] = 25124;
-  // doc["time"] = 1351824120;
-
+  doc["battery"] = analogRead(A4); 
+  // last value given wat 1713.
 
   sensors.begin(); 
   Serial.print("Number of sensors = ");
@@ -66,6 +64,18 @@ void setup() {
     while (1);
   }
   Serial.println("Dallas Temperature IC Control Library Demo"); 
+
+
+  // initial wifi setup. This is repeated within the loop to catch disconnects
+  WiFi.begin(ssid, password);
+  // try connecting to wifi and display status about that
+  Serial.println("Connecting");
+    while(WiFi.status() != WL_CONNECTED) { 
+    delay(500);
+    Serial.print(".");
+  }
+  // print the IP adress of the device (?)
+  Serial.println(WiFi.localIP());
 }
 
 
@@ -76,8 +86,6 @@ void loop() {
   sensors.requestTemperatures(); // Send the command to get temperature readings 
   Serial.println("DONE"); 
   /********************************************************************/
-  Serial.print("Temperature is: "); 
-
   tempValue = sensors.getTempCByIndex(0);
   
   
@@ -88,24 +96,26 @@ void loop() {
 
   // Read the humidity sensor. This one is just reading the DAC GPIO.
   // read sensor value 
-  int dacoutput = analogRead(32);
+  int dacoutput = analogRead(25);
   doc["humidity"] = dacoutput;
 
-
-
   // ## LoRa Section
-  
   // Check what we are sending
   serializeJson(doc, json_string);
   Serial.print(json_string);
   // Open LORA packet
   LoRa.beginPacket();
-  
   // print the JSON string into the package and send
   LoRa.print(json_string);
-
   LoRa.endPacket();
   
+  // initialize http library and point to server
+  // startup http client
+  HTTPClient http;
+  http.begin(serverName);
+  // send the JSON and print response code
+  int httpResponseCode = http.POST(json_string);
+  Serial.println(httpResponseCode);
 
   delay(1000);                       // wait for a second
 }
